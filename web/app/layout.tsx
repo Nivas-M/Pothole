@@ -6,8 +6,8 @@ import Navbar from "@/components/Navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "PotholeGuard",
-  description: "Report and track potholes for safer roads",
+  title: "Promet",
+  description: "Report and track road incidents for safer travel",
 };
 
 export default function RootLayout({

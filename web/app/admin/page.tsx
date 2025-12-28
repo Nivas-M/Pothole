@@ -49,7 +49,7 @@ export default function AdminPage() {
         };
     }, []);
 
-    const updateStatus = async (id: string, newStatus: string) => {
+    const handleStatusChange = async (id: string, newStatus: string) => {
         try {
             const reportRef = doc(db, 'reports', id);
             await updateDoc(reportRef, { status: newStatus });
@@ -66,90 +66,96 @@ export default function AdminPage() {
     if (loading) return <div className="p-8 text-center">Loading Dashboard...</div>;
 
     return (
-        <div className="container mx-auto p-6">
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">Admin Dashboard</h1>
+        <div className="container mx-auto p-6 max-w-6xl">
+            <h1 className="text-3xl font-extrabold mb-8 text-slate-100">Admin Dashboard</h1>
 
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white">
-                        <thead className="bg-gray-100 uppercase text-gray-600 text-xs leading-normal">
-                            <tr>
-                                <th className="py-3 px-6 text-left">Status</th>
-                                <th className="py-3 px-6 text-left">Severity</th>
-                                <th className="py-3 px-6 text-left">Location</th>
-                                <th className="py-3 px-6 text-left">Image</th>
-                                <th className="py-3 px-6 text-left">Reported By</th>
-                                <th className="py-3 px-6 text-center">Actions</th>
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700">
+                                <th className="p-4 font-semibold">Status</th>
+                                <th className="p-4 font-semibold">Severity</th>
+                                <th className="p-4 font-semibold">Location</th>
+                                <th className="p-4 font-semibold">Image</th>
+                                <th className="p-4 font-semibold">Reported By</th>
+                                <th className="p-4 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="text-gray-600 text-sm font-light">
+                        <tbody className="divide-y divide-slate-700/50">
                             {reports.map((report) => (
-                                <tr key={report.id} className="border-b border-gray-200 hover:bg-gray-100">
-                                    <td className="py-3 px-6 text-left whitespace-nowrap">
-                                        <span className={`py-1 px-3 rounded-full text-xs 
-                      ${report.status === 'fixed' ? 'bg-green-200 text-green-600' :
-                                                report.status === 'open' ? 'bg-red-200 text-red-600' : 'bg-yellow-200 text-yellow-600'}`}>
+                                <tr key={report.id} className="hover:bg-slate-700/20 transition-colors group">
+                                    <td className="p-4">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
+                                            ${report.status === 'open'
+                                                ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                                                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`
+                                        }>
                                             {report.status.toUpperCase()}
                                         </span>
                                     </td>
-                                    <td className="py-3 px-6 text-left">
-                                        <span className={`font-medium 
-                      ${report.severity === 'high' ? 'text-red-600' :
-                                                report.severity === 'medium' ? 'text-orange-500' : 'text-blue-500'}`}>
+                                    <td className="p-4">
+                                        <span className={`font-semibold
+                                            ${report.severity === 'high' ? 'text-red-400' :
+                                                report.severity === 'medium' ? 'text-orange-400' : 'text-yellow-400'}`
+                                        }>
                                             {report.severity.toUpperCase()}
                                         </span>
                                     </td>
-                                    <td className="py-3 px-6 text-left">
-                                        <button
-                                            onClick={() => openMap(report.location.lat, report.location.lng)}
-                                            className="text-blue-500 hover:underline"
-                                        >
-                                            View Map
-                                        </button>
-                                        <div className="text-xs text-gray-400">
-                                            {report.location.lat.toFixed(4)}, {report.location.lng.toFixed(4)}
+                                    <td className="p-4 text-slate-300 text-sm">
+                                        {report.location ? (
+                                            <a
+                                                href={`https://www.openstreetmap.org/?mlat=${report.location.lat}&mlon=${report.location.lng}#map=18/${report.location.lat}/${report.location.lng}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1"
+                                            >
+                                                View Map ↗
+                                            </a>
+                                        ) : 'N/A'}
+                                        <div className="text-xs text-slate-500 mt-1 font-mono">
+                                            {report.location?.lat.toFixed(4)}, {report.location?.lng.toFixed(4)}
                                         </div>
                                     </td>
-                                    <td className="py-3 px-6 text-left">
+                                    <td className="p-4">
                                         {report.imageUrl ? (
                                             <a href={report.imageUrl} target="_blank" rel="noopener noreferrer">
-                                                <img src={report.imageUrl} alt="Pothole" className="h-10 w-10 object-cover rounded hover:scale-150 transition" />
+                                                <img
+                                                    src={report.imageUrl}
+                                                    alt="Evidence"
+                                                    className="w-16 h-12 object-cover rounded-lg border border-slate-700 hover:scale-150 transition-transform origin-center bg-slate-900"
+                                                />
                                             </a>
+                                        ) : <span className="text-slate-600 text-xs italic">No Image</span>}
+                                    </td>
+                                    <td className="p-4">
+                                        <div className="text-slate-300 text-sm font-medium">{report.userName}</div>
+                                        <div className="text-xs text-slate-500">
+                                            {report.timestamp ? new Date(report.timestamp.seconds * 1000).toLocaleDateString() : 'Unknown'}
+                                        </div>
+                                    </td>
+                                    <td className="p-4 text-right space-x-2">
+                                        {report.status === 'open' ? (
+                                            <button
+                                                onClick={() => handleStatusChange(report.id, 'fixed')}
+                                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shadow-lg shadow-emerald-500/20"
+                                            >
+                                                Mark Fixed
+                                            </button>
                                         ) : (
-                                            <span className="text-gray-400">No Image</span>
+                                            <button
+                                                onClick={() => handleStatusChange(report.id, 'open')}
+                                                className="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                                            >
+                                                Reopen
+                                            </button>
                                         )}
-                                    </td>
-                                    <td className="py-3 px-6 text-left">
-                                        {report.userName}
-                                        <div className="text-xs text-gray-400">
-                                            {report.timestamp?.seconds ? new Date(report.timestamp.seconds * 1000).toLocaleDateString() : 'Just now'}
-                                        </div>
-                                    </td>
-                                    <td className="py-3 px-6 text-center">
-                                        <div className="flex item-center justify-center gap-2">
-                                            {report.status !== 'fixed' && (
-                                                <button
-                                                    onClick={() => updateStatus(report.id, 'fixed')}
-                                                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-xs"
-                                                >
-                                                    Mark Fixed
-                                                </button>
-                                            )}
-                                            {report.status === 'fixed' && (
-                                                <button
-                                                    onClick={() => updateStatus(report.id, 'open')}
-                                                    className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 text-xs"
-                                                >
-                                                    Reopen
-                                                </button>
-                                            )}
-                                        </div>
                                     </td>
                                 </tr>
                             ))}
                             {reports.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="py-4 text-center">No reports found</td>
+                                    <td colSpan={6} className="py-4 text-center text-slate-500 italic">No reports found</td>
                                 </tr>
                             )}
                         </tbody>
